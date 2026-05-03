@@ -26,9 +26,6 @@ RUN composer install --no-dev --optimize-autoloader
 # Copy the rest of the application
 COPY . .
 
-# Generate application key
-RUN php artisan key:generate
-
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 
