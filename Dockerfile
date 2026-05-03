@@ -2,7 +2,7 @@
 FROM php:8.2-cli
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     libpq-dev \
     libzip-dev \
@@ -10,10 +10,12 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     ca-certificates \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
-RUN docker-php-ext-install \
+RUN docker-php-ext-configure pdo_pgsql && \
+    docker-php-ext-install \
     pdo \
     pdo_pgsql \
     zip \
@@ -25,25 +27,33 @@ RUN docker-php-ext-install \
     tokenizer
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /app
 
-# Copy composer files first for better caching
+# Copy composer files first
 COPY composer.json composer.lock ./
 
-# Install PHP dependencies with increased memory
-RUN COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+# Install PHP dependencies
+RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --no-scripts \
+    --optimize-autoloader
 
 # Copy the rest of the application
 COPY . .
 
-# Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Run any post-install scripts
+RUN COMPOSER_MEMORY_LIMIT=-1 composer run-script post-autoload-dump
 
-# Expose the port that Render will provide
-EXPOSE $PORT
+# Set permissions
+RUN chown -R www-data:www-data storage bootstrap/cache || true
+
+# Expose port
+EXPOSE 8000
 
 # Start the Laravel server
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
