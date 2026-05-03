@@ -20,7 +20,6 @@ RUN docker-php-ext-install bcmath
 RUN docker-php-ext-install ctype
 RUN docker-php-ext-install fileinfo
 RUN docker-php-ext-install mbstring
-RUN docker-php-ext-install tokenizer
 
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
