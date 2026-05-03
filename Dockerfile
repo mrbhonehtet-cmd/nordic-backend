@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libzip-dev \
     libssl-dev \
+    libonig-dev \
     git \
     curl \
     ca-certificates \
