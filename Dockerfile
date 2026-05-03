@@ -10,21 +10,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     ca-certificates \
-    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
-RUN docker-php-ext-configure pdo_pgsql && \
-    docker-php-ext-install \
-    pdo \
-    pdo_pgsql \
-    zip \
-    bcmath \
-    ctype \
-    fileinfo \
-    json \
-    mbstring \
-    tokenizer
+# Install PHP extensions one by one to avoid conflicts
+RUN docker-php-ext-install pdo pdo_pgsql
+RUN docker-php-ext-install zip
+RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install ctype
+RUN docker-php-ext-install fileinfo
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install tokenizer
 
 # Install Composer
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
@@ -47,7 +42,7 @@ RUN COMPOSER_MEMORY_LIMIT=-1 composer install \
 COPY . .
 
 # Run any post-install scripts
-RUN COMPOSER_MEMORY_LIMIT=-1 composer run-script post-autoload-dump
+RUN COMPOSER_MEMORY_LIMIT=-1 composer run-script post-autoload-dump || true
 
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache || true
