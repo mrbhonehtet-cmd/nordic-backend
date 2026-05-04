@@ -19,7 +19,11 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', '*')),
+    'allowed_origins' => [
+        'https://effulgent-bonbon-133fa2.netlify.app',
+        'http://localhost:5173',
+        '*'
+    ],
 
     'allowed_origins_patterns' => [],
 
